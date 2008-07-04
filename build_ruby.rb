@@ -11,10 +11,10 @@ TESTS_PATH = "#{RUBY_PATH}/tests"
 MATZ_RUBY_PATH = "#{SRC_PATH}/matzruby.git"
 RUBYSPEC_PATH = "#{SRC_PATH}/rubyspec.git"
 MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
-
-# RubyBuild objects encapsulate the information needed
-# to checkout and build a tagged version of Ruby in
-# a git clone of Ruby
+#
+# RubyBuild objects encapsulate the information needed to checkout, 
+# build, and run tests on a tag or branch version of Ruby from a 
+# git clone of the main Ruby subversion repository.
 # 
 # Current limitations:
 # 
