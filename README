@@ -1,0 +1,60 @@
+RubyBuild objects encapsulate the information needed
+to checkout and build a tagged version of Ruby in
+a git clone of Ruby
+
+Current limitations:
+
+* only the 1.8 rubyspecs test are run.
+* only works with MRI Ruby
+
+Example -- building and testing a development branch:
+
+   rb = RubyBuild.new('ruby_1_8')
+   rb.build
+   rb.test
+   puts rb.report
+   
+   rubyspec tests for branch: ruby_1_8:
+   
+   testset: 1.8/language:
+   tests completed, files, examples, expectations, failures, errors
+   true, 47, 601, 1620, 0, 0
+   
+   testset: 1.8/library:
+   tests completed, files, examples, expectations, failures, errors
+   true, 1240, 3175, 10952, 15, 8
+   
+   testset: 1.8/core:
+   tests completed, files, examples, expectations, failures, errors
+   true, 1092, 4893, 17353, 0, 2
+
+Example -- building and testing a tagged branch:
+
+   rb = RubyBuild.new(186, 257)
+   rb.build
+   rb.test
+   puts rb.report
+   
+   rubyspec tests for branch: ruby_v1_8_6_257:
+   summary:
+   tests completed, files, examples, expectations, failures, errors
+   true, 2379, 8537, 27777, 21, 3
+   
+   testset: 1.8/language:
+   tests completed, files, examples, expectations, failures, errors
+   true, 47, 601, 1620, 0, 0
+   
+   testset: 1.8/library:
+   tests completed, files, examples, expectations, failures, errors
+   true, 1240, 3071, 8863, 21, 3
+   
+   testset: 1.8/core:
+   tests completed, files, examples, expectations, failures, errors
+   true, 1092, 4865, 17294, 0, 0
+   
+   #   rb = RubyBuild.new(186, 190)
+
+  rb.build
+  rb.test => [true, "2379", "8511", "27830", "17", "3"]
+
+See more documentation in build_ruby.rb
