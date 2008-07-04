@@ -51,10 +51,5 @@ Example -- building and testing a tagged branch:
    testset: 1.8/core:
    tests completed, files, examples, expectations, failures, errors
    true, 1092, 4865, 17294, 0, 0
-   
-   #   rb = RubyBuild.new(186, 190)
-
-  rb.build
-  rb.test => [true, "2379", "8511", "27830", "17", "3"]
 
 See more documentation in build_ruby.rb
