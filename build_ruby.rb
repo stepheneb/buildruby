@@ -98,6 +98,12 @@ MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 # Make sure the PATH constants in build_ruby.rb reflect
 # your choices about where these working directories are placed.
 #
+# Currently Vladimir Sizikov's git clone of MRI Ruby located here: 
+#
+#   git://github.com/rubyspec/matzruby.git
+#
+# Is updated from the MRI svn repository hourly at 54 minutes past the hour.
+#
 # == How to create and test a Ruby patchlevel release in the shell manually.
 #
 # The following shell commands can be executed aftter running the 

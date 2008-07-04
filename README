@@ -4,8 +4,9 @@ a git clone of Ruby
 
 Current limitations:
 
-* only the 1.8 rubyspecs test are run.
-* only works with MRI Ruby
+* so far only the 1.8 rubyspecs test are run.
+* initially it only works with Vladimir Sizikov's git clone
+  of MRI Ruby here: git://github.com/rubyspec/matzruby.git
 
 Example -- building and testing a development branch:
 
