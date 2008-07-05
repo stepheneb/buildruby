@@ -1,8 +1,10 @@
 
+# RubyBuild Copyright 2008 by Concord Consortium
+# Written by Stephen Bannasch, stephen dot bannasch at gmail dot com
+# This program is provided under the same license as Ruby:
+#  http://www.ruby-lang.org/en/LICENSE.txt
+
 require "rubygems"
-require "ruport"
-require "ruport/util"
-require 'scruffy'
   
 RUBY_PATH = "#{ENV['HOME']}/dev/ruby"
 SRC_PATH = "#{RUBY_PATH}/src"
