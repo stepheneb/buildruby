@@ -588,35 +588,3 @@ class RubyBuildsReport
     report
   end 
 end
-
-class GraphReport < Ruport::Report
-  renders_as_graph
-  def renderable_data(format)
-    graph = Graph(rbreport.report_range.to_a)
-    graph.series(rbreport.ruby_builds.collect {|rb| rb.rubyspec_failures }, "rubyspec failures") 
-    return graph
-  end
-end
-
-# rbreport = RubyBuildsReport.new(230..257)
-# 
-# GraphReport.generate do |r| 
-#     r.save_as("rubyspec_test_ruby_patchelevels_190_192.svg", :template => :graph)
-# end
-  
-# (241..254).each do |patch|
-#   build_and_install_local_branch(186, patch)
-# end
-# 
-# def get_summaries(range)
-#   reports = []
-#   summaries = []
-#   range.each do |patch|
-#     reports << [patch, run_rubyspecs_on_local_branch(186, patch)]
-#     summaries << [patch, extract_summary_from_rubyspecs_report(reports.last[1])]
-#   end
-#   summaries
-# end
-
-# 
-# puts run_rubyspecs_on_local_branch(186, 114)
