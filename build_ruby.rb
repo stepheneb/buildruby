@@ -1,5 +1,5 @@
 
-# RubyBuild Copyright 2008 by Concord Consortium
+# BuildRuby Copyright 2008 by Concord Consortium
 # Written by Stephen Bannasch, stephen dot bannasch at gmail dot com
 # This program is provided under the same license as Ruby:
 #  http://www.ruby-lang.org/en/LICENSE.txt
@@ -14,7 +14,7 @@ MATZ_RUBY_PATH = "#{SRC_PATH}/matzruby.git"
 RUBYSPEC_PATH = "#{SRC_PATH}/rubyspec.git"
 MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 #
-# RubyBuild objects encapsulate the information needed to checkout, 
+# BuildRuby objects encapsulate the information needed to checkout, 
 # build, and run tests on a tag or branch version of Ruby from a 
 # git clone of the main Ruby subversion repository.
 # 
@@ -25,7 +25,7 @@ MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 # 
 # Example -- building and testing a development branch:
 # 
-#    rb = RubyBuild.new('ruby_1_8')
+#    rb = BuildRuby.new('ruby_1_8')
 #    rb.build
 #    rb.test
 #    puts rb.report
@@ -46,7 +46,7 @@ MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 #
 # Example -- building and testing a tagged branch:
 #
-#    rb = RubyBuild.new(186, 257)
+#    rb = BuildRuby.new(186, 257)
 #    rb.build
 #    rb.test
 #    puts rb.report
@@ -123,7 +123,7 @@ MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 #   git checkout ruby_v1_8_6_p114
 #
 # The previous section is a manual version of what a 
-# RubyBuild object instance performs.
+# BuildRuby object instance performs.
 #
 # == More useful git info
 #
@@ -164,7 +164,7 @@ MSPEC_PATH = "#{SRC_PATH}/mspec.git/bin"
 # Perform a: 'git pull' to update your local branch
 #
 #
-class RubyBuild
+class BuildRuby
   #
   # The version of ruby that should be built or tested expressed as 
   # an integer or the name of a ruby branch expressed as a string""
@@ -207,6 +207,16 @@ class RubyBuild
   #   tag "v1_8_6_257" => branch "ruby_v1_8_6_257"
   #
   attr_reader :branch
+  #
+  # The major version number of this ruby branch or tag
+  #
+  # Examples:
+  #
+  #   tag "v1_8_6_114" => "1.8"
+  #   tag "v1_8_7_70" => "1.8"
+  #   tag "v1_9_1_preview1" => branch "1.9"
+  #
+  attr_reader :ruby_version
   #
   # The total results sent to STDOUT when building ruby
   #
@@ -297,45 +307,51 @@ class RubyBuild
   attr_reader :rubyspec_path
   #
   # Pass in a Ruby version and patchlevel in integer form
-  # when creating a new RubyBuild instance based on a tag.
+  # when creating a new BuildRuby instance based on a tag.
   #
   # Examples for Ruby tags:
   #
-  # Creating a RubyBuild object for building and testing tag: v1_8_6_v190
+  # Creating a BuildRuby object for building and testing tag: v1_8_6_v190
   #
-  #   rb = RubyBuild.new(186, 190)
+  #   rb = BuildRuby.new(186, 190)
   #
-  # Creating a RubyBuild object for building and testing tag: v1_9_0_2
+  # Creating a BuildRuby object for building and testing tag: v1_9_0_2
   #
-  #   rb = RubyBuild.new(190, 2)
+  #   rb = BuildRuby.new(190, 2)
   #
   # Examples for Ruby branches:
   #
   # If you want to build from an active branch like ruby_1_8, ruby_1_8_7 
   # or trunk pass in the branch name as string.
   #
-  # Creating a RubyBuild object for building and testing branch: ruby_1_8
+  # Creating a BuildRuby object for building and testing branch: ruby_1_8
   #
-  #   rb = RubyBuild.new('ruby_1_8')
+  #   rb = BuildRuby.new('ruby_1_8')
   #
-  # Creating a RubyBuild object for building and testing branch: ruby_1_8_7
+  # Creating a BuildRuby object for building and testing branch: ruby_1_8_7
   #
-  #   rb = RubyBuild.new('ruby_1_8_7')
+  #   rb = BuildRuby.new('ruby_1_8_7')
   #
-  # Creating a RubyBuild object for building and testing branch: trunk
+  # Creating a BuildRuby object for building and testing branch: trunk
   #
-  #   rb = RubyBuild.new('trunk')
+  #   rb = BuildRuby.new('trunk')
   #
   def initialize(version, patchlevel=nil)
     @version = version
     @patchlevel = patchlevel
     @tag, @local_branch = generate_tag_and_local_branch
     @instance_cache_path = "#{TESTS_PATH}/#{@local_branch}.yml"
+    @ruby_version = case @tag
+    when /1_8_/: "1.8"
+    when /1_9_/: "1.9"
+    when /trunk/: "1.9"
+    else "1.8"
+    end
     check_for_cached_test_and_build_data
-    @build_path = "#{BUILDS_PATH}/#{@local_branch}"
+    @build_path = "#{BUILDS_PATH}/mri/#{@local_branch}"
     @ruby_run_path = "#{@build_path}/bin/ruby"
     @mspec_run_path = "#{MSPEC_PATH}/mspec -t"
-    @rubyspec_path = "#{RUBYSPEC_PATH}/1.8"
+    @rubyspec_paths = { "1.8" => "#{RUBYSPEC_PATH}/1.8", "1.9" => "#{RUBYSPEC_PATH}/1.9" }
   end
   
   def generate_tag_and_local_branch
@@ -376,11 +392,12 @@ class RubyBuild
   # and builds that ruby. The compilation products
   # are saved in "builds/#{branch}"
   #
-  # Pass RubyBuild#build(true) to force rebuilding
+  # Pass BuildRuby#build(true) to force rebuilding
   # 
   def build(force=false)
+    @force=force
     checkout_or_create_local_git_branch
-    if !built? || force || @branch_updated
+    if !built? || @force || @branch_updated
       build_and_install_local_branch
     else
       puts "\n#{@tag} has already been built\n\n"
@@ -388,12 +405,12 @@ class RubyBuild
   end
 
   def built?
-    File.exists?(@build_path)
+    File.exists?(@build_path) || !@force
   end
   #
   # Runs the rubyspec 1.8/ tests
   #
-  # Pass RubyBuild#test(true) to force re-testing
+  # Pass BuildRuby#test(true) to force re-testing
   # 
   def test(force=false)
     if built?
@@ -431,6 +448,10 @@ class RubyBuild
     @branch_updated = false
     if @local_branch == get_current_git_branch
       puts "\n#{@local_branch} already checked out\n"
+      if @force
+        puts "forcing an update ..."
+        run_shell_command("git pull")
+      end 
     elsif @local_branches[/#{@local_branch}/]
       response = run_shell_command("git checkout #{@local_branch}")
       if response[/can be fast-forwarded/]
@@ -448,21 +469,25 @@ class RubyBuild
   end
   #
   # Builds the checked out ruby. The compilation 
-  # products are saved in "builds/#{@local_branch}"
-  # 
+  # products are saved in "builds/mri/#{@local_branch}"
+  #
+  # A symbolic link: ruby18 or ruby19 is created in
+  # the builds dir pointing to the build.
+  #
   def build_and_install_local_branch
     checkout_or_create_local_git_branch unless @local_branch == get_current_git_branch
     puts "\nconfiguring #{@local_branch}\n"
     @build_report = run_shell_command("autoconf && ./configure --prefix=#{@build_path}")
     puts "\nbuild and install #{@local_branch}:\n"
-    @build_report << run_shell_command("make && make install")
-    @build_version = run_shell_command("#{ruby_run_path} -v")
+    @build_report << run_shell_command("make clean && make && make install")
+    @build_version = run_shell_command("#{@ruby_run_path} -v")
+    run_shell_command("cd #{BUILDS_PATH}; ln -f -s #{@ruby_run_path} ruby#{@ruby_version.gsub('.', '')}")
   end
 
   def run_rubyspecs_on_local_branch
     @rubyspec_reports = {}
     %w{core language library}.each do |testset|
-      result = run_shell_command("unset RUBYOPT && #{@mspec_run_path} #{ruby_run_path} #{rubyspec_path}/#{testset}")
+      result = run_shell_command("unset RUBYOPT && #{@mspec_run_path} #{@ruby_run_path} #{@rubyspec_paths[@ruby_version]}/#{testset}")
       @rubyspec_reports.merge!({"#{testset}" => result})
     end
     extract_summaries_from_rubyspecs_reports
@@ -543,7 +568,7 @@ class RubyBuild
 
 end
 
-class RubyBuildsReport
+class BuildRubysReport
   #
   # A version of Ruby to test in integer form.
   #
@@ -565,7 +590,7 @@ class RubyBuildsReport
   #
   attr_reader :report_range
   #
-  # An array of RubyBuild objects that have been built and tested. 
+  # An array of BuildRuby objects that have been built and tested. 
   #
   attr_reader :ruby_builds
   #
@@ -574,7 +599,7 @@ class RubyBuildsReport
     @report_range = report_range
     @ruby_builds = []
     @report_range.each do |patch|
-      rb = RubyBuild.new(@version, patch)
+      rb = BuildRuby.new(@version, patch)
       rb.build
       rb.test
       rb.save
